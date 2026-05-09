@@ -25,6 +25,7 @@ export default function GalleryPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [ordering, setOrdering] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -83,9 +84,7 @@ export default function GalleryPage() {
 
   if (loading) return (
     <main className="min-h-screen flex items-center justify-center" style={{ background: 'var(--cream)' }}>
-      <div className="text-center">
-        <div className="font-display text-2xl mb-2" style={{ color: 'var(--gold)' }}>Carregando...</div>
-      </div>
+      <div className="font-display text-2xl" style={{ color: 'var(--gold)' }}>Carregando...</div>
     </main>
   );
 
@@ -105,6 +104,27 @@ export default function GalleryPage() {
 
   return (
     <main className="min-h-screen" style={{ background: 'var(--cream)' }}>
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.9)' }}
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white text-3xl font-light"
+            onClick={() => setLightbox(null)}
+          >✕</button>
+          <img
+            src={lightbox}
+            alt="Tela ampliada"
+            className="max-w-full max-h-full rounded-xl"
+            style={{ maxHeight: '90vh', objectFit: 'contain' }}
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-10 flex justify-between items-center px-8 py-5" style={{ background: 'var(--cream)', borderBottom: '1px solid var(--gold-light)' }}>
         <Link href="/" className="font-display text-2xl" style={{ color: 'var(--gold-dark)' }}>Artela</Link>
@@ -123,15 +143,18 @@ export default function GalleryPage() {
         <div className="mb-10">
           <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--gold)' }}>Suas artes personalizadas</p>
           <h1 className="font-display text-4xl" style={{ color: 'var(--charcoal)' }}>Olá, {data?.user?.name}! ✨</h1>
-          <p className="mt-2 text-sm" style={{ color: 'var(--warm-gray)' }}>Escolha as telas que deseja e adicione ao carrinho.</p>
+          <p className="mt-2 text-sm" style={{ color: 'var(--warm-gray)' }}>Clique nas imagens para ampliar. Adicione as que desejar ao carrinho.</p>
         </div>
 
         {/* Produtos */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {data?.products?.map((product: any) => (
             <div key={product.id} className="rounded-2xl overflow-hidden" style={{ background: 'var(--warm-white)', border: '1px solid var(--gold-light)' }}>
-              <div className="relative">
-                <img src={product.image_url} alt={product.product_name} className="w-full h-56 object-cover" />
+              <div className="relative group cursor-pointer" onClick={() => setLightbox(product.image_url)}>
+                <img src={product.image_url} alt={product.product_name} className="w-full h-64 object-cover transition group-hover:opacity-90" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition" style={{ background: 'rgba(0,0,0,0.3)' }}>
+                  <span className="text-white text-sm font-medium px-4 py-2 rounded-full" style={{ background: 'rgba(0,0,0,0.5)' }}>🔍 Ampliar</span>
+                </div>
                 <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'var(--charcoal)', color: 'var(--gold-light)' }}>
                   {SIZES[product.product_id]}
                 </div>
