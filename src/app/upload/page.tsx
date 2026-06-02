@@ -35,7 +35,7 @@ export default function UploadPage() {
       if (!res.ok) throw new Error('Erro ao enviar');
       const json = await res.json();
       // Monta o link da galeria diretamente no frontend
-      const base = process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin;
+      const base = window.location.origin;
       const token = json.accessToken;
       if (token) setGalleryLink(`${base}/gallery/${token}`);
       setStep('success');
