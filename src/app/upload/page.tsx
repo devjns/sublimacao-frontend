@@ -7,6 +7,7 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [galleryLink, setGalleryLink] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ name: '', email: '', whatsapp: '' });
 
@@ -32,6 +33,11 @@ export default function UploadPage() {
       setLoading(true);
       const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/upload', { method: 'POST', body: data });
       if (!res.ok) throw new Error('Erro ao enviar');
+      const json = await res.json();
+      // Monta o link da galeria diretamente no frontend
+      const base = process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin;
+      const token = json.accessToken;
+      if (token) setGalleryLink(`${base}/gallery/${token}`);
       setStep('success');
     } catch {
       setError('Erro ao enviar. Tente novamente.');
@@ -43,11 +49,46 @@ export default function UploadPage() {
   if (step === 'success') {
     return (
       <main className="min-h-screen flex items-center justify-center p-8" style={{ background: 'var(--cream)' }}>
-        <div className="text-center max-w-md">
+        <div className="text-center max-w-md w-full">
           <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl" style={{ background: 'var(--gold-light)' }}>🎨</div>
           <h2 className="font-display text-3xl mb-3" style={{ color: 'var(--charcoal)' }}>Foto recebida!</h2>
-          <p style={{ color: 'var(--warm-gray)' }}>
-            Estamos criando suas telas personalizadas. Em alguns minutos você receberá o link pelo <strong>WhatsApp</strong>!
+          <p className="mb-6" style={{ color: 'var(--warm-gray)' }}>
+            Estamos criando suas telas personalizadas. Em alguns minutos elas estarão prontas no link abaixo — salve-o!
+          </p>
+
+          {galleryLink && (
+            <div className="rounded-2xl p-5 mb-6 text-left" style={{ background: 'var(--warm-white)', border: '1.5px solid var(--gold-light)' }}>
+              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--warm-gray)' }}>Seu link da galeria</p>
+              <a
+                href={galleryLink}
+                target="_blank"
+                rel="noreferrer"
+                className="block text-sm break-all underline mb-3"
+                style={{ color: 'var(--gold-dark)' }}
+              >
+                {galleryLink}
+              </a>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { navigator.clipboard.writeText(galleryLink); alert('Link copiado!'); }}
+                  className="flex-1 py-2 rounded-xl text-sm font-medium transition hover:opacity-90"
+                  style={{ background: 'var(--gold-light)', color: 'var(--gold-dark)', border: '1px solid var(--gold)' }}
+                >
+                  📋 Copiar link
+                </button>
+                <Link
+                  href={galleryLink}
+                  className="flex-1 py-2 rounded-xl text-sm font-medium text-center transition hover:opacity-90"
+                  style={{ background: 'var(--charcoal)', color: 'var(--gold-light)' }}
+                >
+                  Ver galeria →
+                </Link>
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs" style={{ color: 'var(--canvas-tan)' }}>
+            A página da galeria atualiza automaticamente quando as artes ficarem prontas.
           </p>
         </div>
       </main>
